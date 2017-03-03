@@ -31,6 +31,10 @@ PyPlot.plot(x::DataArray, y::DataArray; kws...) = plot(pyma(x), pyma(y); kws...)
 pcol{T}(z::Array{T,2}; kws...) = pcolor(pycall(ma.array, Any, z, mask=isnan.(z)); kws...)
 
 
+
+"""
+Plots the coastline from the file `fname`. The file `fname` is a .mat file with the variables `ncst` and `Area`.
+"""
 function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l.mat"))
     xl = xlim()
     yl = ylim()
@@ -52,14 +56,18 @@ function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l
     ylim(yl)
 end
 
-
+```
+Fixes the aspect ratio of a plot.
+```
 function set_aspect_ratio()
     ax = gca()
     as = cos(mean([ylim()...]) * pi/180)
     ax[:set_aspect](1/as)
 end
 
-
+```
+List all files starting from `topdir` with the provided `extension`.
+```
 function listfiles(topdir = "."; extension = "")
     list = []
 
