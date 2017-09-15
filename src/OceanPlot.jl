@@ -42,15 +42,16 @@ function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l
 
     c = matread(fname)
     k = round(Int64,c["k"])
+    area = c["Area"]
+    ncst = c["ncst"]
 
-    index = find(c["Area"] .> 0);
+    for i=1:length(area)
+        if area[i] > 0
+            j = k[i]+1:k[i+1]-1;
 
-    for l=1:length(index)
-        i = index[l];
-        j = k[i]+1:k[i+1]-1;
-
-        #  patch(c.ncst[j,1],c.ncst[j,2],[.8 .8 .8]);
-        plot(c["ncst"][j,1],c["ncst"][j,2],"k-",linewidth=2.);
+            #  patch(c.ncst[j,1],c.ncst[j,2],[.8 .8 .8]);
+            plot(ncst[j,1],ncst[j,2],"k-",linewidth=2.);
+        end
     end
 
     xlim(xl)
