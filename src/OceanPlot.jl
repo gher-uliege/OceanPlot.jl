@@ -15,7 +15,7 @@ masked(S,mask) = pycall(ma.array, Any, S, mask=mask)
 # Plotting NullableArrays (masked arrays for python)
 
 
-na2pyma(S) = masked(S.values, mask=S.isnull)
+na2pyma(S) = masked(S.values, S.isnull)
 PyPlot.pcolor(x,y,z::NullableArray; kws...) = pcolor(x,y,na2pyma(z); kws...)
 PyPlot.pcolor(z::NullableArray; kws...) = pcolor(na2pyma(z); kws...)
 pcol(x,y,z::NullableArray; kws...) = pcolor(x,y,na2pyma(z); kws...)
@@ -24,7 +24,7 @@ PyPlot.plot(x::NullableArray, y::NullableArray; kws...) = plot(na2pyma(x), na2py
 
 # Plotting DataArrays (masked arrays for python)
 
-pyma(S) = masked(S.data, mask=S.na)
+pyma(S) = masked(S.data, S.na)
 PyPlot.pcolor(z::DataArray; kws...) = pcolor(pyma(z); kws...)
 PyPlot.pcolor(x,y,z::DataArray; kws...) = pcolor(x,y,pyma(z); kws...)
 pcol(z::DataArray; kws...) = pcolor(pyma(z); kws...)
@@ -33,7 +33,7 @@ PyPlot.plot(x::DataArray, y::DataArray; kws...) = plot(pyma(x), pyma(y); kws...)
 
 
 # Plotting using NaNs
-NaNpyma(S) = masked(S, mask=isnan.(S))
+NaNpyma(S) = masked(S, isnan.(S))
 pcol{T}(z::Array{T,2}; kws...) = pcolor(NaNpyma(z); kws...)
 pcol{T}(x,y,z::Array{T,2}; kws...) = pcolor(x,y,NaNpyma(z); kws...)
 
@@ -64,6 +64,7 @@ function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l
             plot(ncst[:,1],ncst[:,2],"k-",linewidth = linewidth);
         else
             ax[:add_patch](patch.Polygon(ncst,color = patchcolor, zorder = zorder))
+        end
 
     for l=1:length(index)
         i = index[l];
