@@ -7,12 +7,15 @@ using PyCall
 using MAT
 
 @pyimport numpy.ma as ma
+@pyimport matplotlib.patches as patch
 
 export plot_coastline, pcol, listfiles, set_aspect_ratio
 
+masked(S,mask) = pycall(ma.array, Any, S, mask=mask)
 # Plotting NullableArrays (masked arrays for python)
 
-na2pyma(S) =  pycall(ma.array, Any, S.values, mask=S.isnull)
+
+na2pyma(S) = masked(S.values, mask=S.isnull)
 PyPlot.pcolor(x,y,z::NullableArray; kws...) = pcolor(x,y,na2pyma(z); kws...)
 PyPlot.pcolor(z::NullableArray; kws...) = pcolor(na2pyma(z); kws...)
 pcol(x,y,z::NullableArray; kws...) = pcolor(x,y,na2pyma(z); kws...)
@@ -21,41 +24,57 @@ PyPlot.plot(x::NullableArray, y::NullableArray; kws...) = plot(na2pyma(x), na2py
 
 # Plotting DataArrays (masked arrays for python)
 
-pyma(S) =  pycall(ma.array, Any, S.data, mask=S.na)
+pyma(S) = masked(S.data, mask=S.na)
 PyPlot.pcolor(z::DataArray; kws...) = pcolor(pyma(z); kws...)
 PyPlot.pcolor(x,y,z::DataArray; kws...) = pcolor(x,y,pyma(z); kws...)
 pcol(z::DataArray; kws...) = pcolor(pyma(z); kws...)
 pcol(x,y,z::DataArray; kws...) = pcolor(x,y,pyma(z); kws...)
 PyPlot.plot(x::DataArray, y::DataArray; kws...) = plot(pyma(x), pyma(y); kws...)
 
-pcol{T}(z::Array{T,2}; kws...) = pcolor(pycall(ma.array, Any, z, mask=isnan.(z)); kws...)
-pcol{T}(x,y,z::Array{T,2}; kws...) = pcolor(x,y,pycall(ma.array, Any, z, mask=isnan.(z)); kws...)
+
+# Plotting using NaNs
+NaNpyma(S) = masked(S, mask=isnan.(S))
+pcol{T}(z::Array{T,2}; kws...) = pcolor(NaNpyma(z); kws...)
+pcol{T}(x,y,z::Array{T,2}; kws...) = pcolor(x,y,NaNpyma(z); kws...)
 
 
 
 """
 Plots the coastline from the file `fname`. The file `fname` is a .mat file with the variables `ncst` and `Area`.
 """
-function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l.mat"))
-    xl = xlim()
-    yl = ylim()
 
-    c = matread(fname)
-    k = round(Int64,c["k"])
-    area = c["Area"]
-    ncst = c["ncst"]
-
-    for i=1:length(area)
-        if area[i] > 0
-            j = k[i]+1:k[i+1]-1;
-
-            #  patch(c.ncst[j,1],c.ncst[j,2],[.8 .8 .8]);
-            plot(ncst[j,1],ncst[j,2],"k-",linewidth=2.);
-        end
+function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l.mat"); 
+                         patchcolor = [.8,.8,.8], linewidth = 2.,zorder = nothing,plot = :plot)
+    if fname in ["l","i","c","h"]
+        fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_$(fname).mat")
     end
 
+    xl = xlim()
+    yl = ylim()
+    
+    c = matread(fname)
+    k = round.(Int64,c["k"])
+    ncst = c["ncst"] :: Array{Float64,2}
+    area = c["Area"][:,1] :: Vector{Float64}
+    index = find(area .> 0);
+    ax = gca();
+    
+    cplot(ncst) = 
+        if plot == :plot
+            plot(ncst[:,1],ncst[:,2],"k-",linewidth = linewidth);
+        else
+            ax[:add_patch](patch.Polygon(ncst,color = patchcolor, zorder = zorder))
+
+    for l=1:length(index)
+        i = index[l];
+        j = k[i]+1:k[i+1]-1;        
+        cplot(ncst[j,:])
+    end
+    
     xlim(xl)
     ylim(yl)
+
+    nothing
 end
 
 """
@@ -71,7 +90,7 @@ end
 List all files starting from `topdir` with the provided `extension`.
 """
 function listfiles(topdir = "."; extension = "")
-    list = []
+    list = String[]
 
     for (root,dirs,files) in walkdir(".")
         for file in files
