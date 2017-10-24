@@ -5,11 +5,14 @@ using DataArrays
 using PyPlot
 using PyCall
 using MAT
+using NCDatasets
 
 @pyimport numpy.ma as ma
-@pyimport matplotlib.patches as patch
+@pyimport matplotlib.patches as pypatch
 
-export plot_coastline, pcol, listfiles, set_aspect_ratio
+export plot_coastline, pcol, listfiles, set_aspect_ratio, patch, plotvecstd
+
+patch(x,y; kwargs...) = gca()[:add_patch](pypatch.Polygon(cat(2,x,y); kwargs...))
 
 masked(S,mask) = pycall(ma.array, Any, S, mask=mask)
 # Plotting NullableArrays (masked arrays for python)
@@ -38,6 +41,13 @@ pcol{T}(z::Array{T,2}; kws...) = pcolor(NaNpyma(z); kws...)
 pcol{T}(x,y,z::Array{T,2}; kws...) = pcolor(x,y,NaNpyma(z); kws...)
 
 
+function ncview(fname,varname,slide)
+    Dataset(fname) do ds
+        pcol(ds[varname][slide...]'; cmap="jet")
+    end    
+end
+
+
 
 """
 Plots the coastline from the file `fname`. The file `fname` is a .mat file with the variables `ncst` and `Area`.
@@ -63,7 +73,7 @@ function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l
         if plot == :plot
             plot(ncst[:,1],ncst[:,2],"k-",linewidth = linewidth);
         else
-            ax[:add_patch](patch.Polygon(ncst,color = patchcolor, zorder = zorder))
+            ax[:add_patch](pypatch.Polygon(ncst,color = patchcolor, zorder = zorder))
         end
 
     for l=1:length(index)
@@ -86,6 +96,53 @@ function set_aspect_ratio()
     as = cos(mean([ylim()...]) * pi/180)
     ax[:set_aspect](1/as)
 end
+
+
+
+function plotvecstd1(x,y,u1,v1; scale = 1, scaleu = scale,
+                     scalev = scale, scalestd = 1)
+    um = mean(u1)
+    vm = mean(v1)
+
+    up = u1 - mean(u1)
+    vp = v1 - mean(v1)
+
+    P = Symmetric([up⋅up  up⋅vp ; 0  vp⋅vp ], :U) / (length(up)-1)
+
+    λ, U = eig(P)
+    xy = [U[i,1] * sqrt(λ[1]) * cos(θ) + U[i,2] * sqrt(λ[2]) * sin(θ) for θ = linspace(0,2π,100), i = 1:2];
+
+    patch(x + scaleu*(scalestd*xy[:,1] + um),y + scalev*(scalestd*xy[:,2] + vm);
+          color = "lightblue", zorder = 1)
+
+    quiver([x],[y],[scaleu*um],[scalev*vm]; angles = "xy", scale_units = "xy", scale = 1, zorder = 2)
+
+end
+
+function plotvecstd(x,y,u,v; scale = 1, scaleu = scale,
+                    scalev = scale, scalestd = 1, mincount = 10,
+                    legendpos = [], legendvec = [1,0], legendcolor = "r")
+    
+    for j = 1:size(x,2)
+        for i = 1:size(x,1)
+            u1 = u[i,j,:]
+            v1 = v[i,j,:]
+            if sum(.!isna.(u1)) >= mincount && sum(.!isna.(v1)) >= mincount
+                plotvecstd1(x[i,j],y[i,j],u1.data,v1.data;
+                            scaleu = scaleu, scalev = scalev,
+                            scalestd = scalestd)
+            end
+        end
+    end
+
+    if length(legendpos) == 2        
+        quiver(legendpos[1],legendpos[2],scaleu*legendvec[1],scalev*legendvec[2];
+               angles = "xy", scale_units = "xy", scale = 1, zorder = 2,
+               color = legendcolor)
+    end
+    
+end
+
 
 """
 List all files starting from `topdir` with the provided `extension`.
