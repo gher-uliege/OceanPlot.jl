@@ -17,6 +17,7 @@ addons:
 matrix:
  allow_failures:
  - julia: nightly
+ - os: osx
 # uncomment the following lines to override the default test script
 #script:
 #  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
