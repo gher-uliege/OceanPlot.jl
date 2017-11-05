@@ -8,6 +8,12 @@ julia:
   - nightly
 notifications:
   email: false
+addons:
+  apt:
+    packages:
+    - hdf5-tools
+    - python-matplotlib
+    - libnetcdf-dev
 matrix:
  allow_failures:
  - julia: nightly

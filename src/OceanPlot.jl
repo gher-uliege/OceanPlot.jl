@@ -71,7 +71,7 @@ function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l
     
     cplot(ncst) = 
         if plot == :plot
-            plot(ncst[:,1],ncst[:,2],"k-",linewidth = linewidth);
+            PyPlot.plot(ncst[:,1],ncst[:,2],"k-"; linewidth = linewidth);
         else
             ax[:add_patch](pypatch.Polygon(ncst,color = patchcolor, zorder = zorder))
         end
@@ -150,7 +150,7 @@ List all files starting from `topdir` with the provided `extension`.
 function listfiles(topdir = "."; extension = "")
     list = String[]
 
-    for (root,dirs,files) in walkdir(".")
+    for (root,dirs,files) in walkdir(topdir)
         for file in files
             if length(extension) == 0
                 push!(list, joinpath(root, file))
