@@ -54,7 +54,7 @@ Plots the coastline from the file `fname`. The file `fname` is a .mat file with 
 """
 
 function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l.mat"); 
-                         patchcolor = [.8,.8,.8], linewidth = 2.,zorder = nothing,plot = :plot)
+                         patchcolor = [.8,.8,.8], linewidth = 2.,zorder = nothing,plottype = :plot)
     if fname in ["l","i","c","h"]
         fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_$(fname).mat")
     end
@@ -70,8 +70,8 @@ function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l
     ax = gca();
     
     cplot(ncst) = 
-        if plot == :plot
-            PyPlot.plot(ncst[:,1],ncst[:,2],"k-"; linewidth = linewidth);
+        if plottype == :plot
+            plot(ncst[:,1],ncst[:,2],"k-",linewidth = linewidth);
         else
             ax[:add_patch](pypatch.Polygon(ncst,color = patchcolor, zorder = zorder))
         end
