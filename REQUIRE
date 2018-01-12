@@ -1,5 +1,4 @@
 julia 0.6
-NullableArrays
 DataArrays
 NCDatasets
 PyPlot

@@ -1,6 +1,5 @@
 module OceanPlot
 
-using NullableArrays
 using DataArrays
 using PyPlot
 using PyCall
@@ -15,15 +14,6 @@ export plot_coastline, pcol, listfiles, set_aspect_ratio, patch, plotvecstd
 patch(x,y; kwargs...) = gca()[:add_patch](pypatch.Polygon(cat(2,x,y); kwargs...))
 
 masked(S,mask) = pycall(ma.array, Any, S, mask=mask)
-# Plotting NullableArrays (masked arrays for python)
-
-
-na2pyma(S) = masked(S.values, S.isnull)
-PyPlot.pcolor(x,y,z::NullableArray; kws...) = pcolor(x,y,na2pyma(z); kws...)
-PyPlot.pcolor(z::NullableArray; kws...) = pcolor(na2pyma(z); kws...)
-pcol(x,y,z::NullableArray; kws...) = pcolor(x,y,na2pyma(z); kws...)
-pcol(z::NullableArray; kws...) = pcolor(na2pyma(z); kws...)
-PyPlot.plot(x::NullableArray, y::NullableArray; kws...) = plot(na2pyma(x), na2pyma(y); kws...)
 
 # Plotting DataArrays (masked arrays for python)
 
