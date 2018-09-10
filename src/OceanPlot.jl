@@ -34,7 +34,7 @@ pcol{T}(x,y,z::Array{T,2}; kws...) = pcolor(x,y,NaNpyma(z); kws...)
 function ncview(fname,varname,slide)
     Dataset(fname) do ds
         pcol(ds[varname][slide...]'; cmap="jet")
-    end    
+    end
 end
 
 
@@ -43,7 +43,7 @@ end
 Plots the coastline from the file `fname`. The file `fname` is a .mat file with the variables `ncst` and `Area`.
 """
 
-function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l.mat"); 
+function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l.mat");
                          patchcolor = [.8,.8,.8], linewidth = 2.,zorder = nothing,plottype = :plot)
     if fname in ["l","i","c","h"]
         fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_$(fname).mat")
@@ -51,15 +51,15 @@ function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l
 
     xl = xlim()
     yl = ylim()
-    
+
     c = matread(fname)
     k = round.(Int64,c["k"])
     ncst = c["ncst"] :: Array{Float64,2}
     area = c["Area"][:,1] :: Vector{Float64}
     index = find(area .> 0);
     ax = gca();
-    
-    cplot(ncst) = 
+
+    cplot(ncst) =
         if plottype == :plot
             plot(ncst[:,1],ncst[:,2],"k-",linewidth = linewidth);
         else
@@ -68,10 +68,10 @@ function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l
 
     for l=1:length(index)
         i = index[l];
-        j = k[i]+1:k[i+1]-1;        
+        j = k[i]+1:k[i+1]-1;
         cplot(ncst[j,:])
     end
-    
+
     xlim(xl)
     ylim(yl)
 
@@ -112,7 +112,7 @@ end
 function plotvecstd(x,y,u,v; scale = 1, scaleu = scale,
                     scalev = scale, scalestd = 1, mincount = 10,
                     legendpos = [], legendvec = [1,0], legendcolor = "r")
-    
+
     for j = 1:size(x,2)
         for i = 1:size(x,1)
             u1 = u[i,j,:]
@@ -125,12 +125,12 @@ function plotvecstd(x,y,u,v; scale = 1, scaleu = scale,
         end
     end
 
-    if length(legendpos) == 2        
+    if length(legendpos) == 2
         quiver(legendpos[1],legendpos[2],scaleu*legendvec[1],scalev*legendvec[2];
                angles = "xy", scale_units = "xy", scale = 1, zorder = 2,
                color = legendcolor)
     end
-    
+
 end
 
 
