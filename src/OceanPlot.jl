@@ -1,34 +1,46 @@
 module OceanPlot
 
-using DataArrays
+if VERSION >= v"0.7"
+    using Statistics
+else
+    using DataArrays
+end
+
 using PyPlot
 using PyCall
-using MAT
+@static if VERSION < v"0.7"
+    using MAT
+end
 using NCDatasets
+using DIVAnd
 
-@pyimport numpy.ma as ma
-@pyimport matplotlib.patches as pypatch
+if VERSION < v"0.7"
+
+    @pyimport numpy.ma as ma
+    @pyimport matplotlib.patches as pypatch
+
+
+    masked(S,mask) = pycall(ma.array, Any, S, mask=mask)
+
+
+    # Plotting DataArrays (masked arrays for python)
+
+    pyma(S) = masked(S.data, S.na)
+    PyPlot.pcolor(z::DataArray; kws...) = pcolor(pyma(z); kws...)
+    PyPlot.pcolor(x,y,z::DataArray; kws...) = pcolor(x,y,pyma(z); kws...)
+    pcol(z::DataArray; kws...) = pcolor(pyma(z); kws...)
+    pcol(x,y,z::DataArray; kws...) = pcolor(x,y,pyma(z); kws...)
+    PyPlot.plot(x::DataArray, y::DataArray; kws...) = plot(pyma(x), pyma(y); kws...)
+
+    # Plotting using NaNs
+    NaNpyma(S) = masked(S, isnan.(S))
+    pcol(z::Array{T,2}; kws...) where T = pcolor(NaNpyma(z); kws...)
+    pcol(x,y,z::Array{T,2}; kws...) where T = pcolor(x,y,NaNpyma(z); kws...)
+end
 
 export plot_coastline, pcol, listfiles, set_aspect_ratio, patch, plotvecstd
 
 patch(x,y; kwargs...) = gca()[:add_patch](pypatch.Polygon(cat(2,x,y); kwargs...))
-
-masked(S,mask) = pycall(ma.array, Any, S, mask=mask)
-
-# Plotting DataArrays (masked arrays for python)
-
-pyma(S) = masked(S.data, S.na)
-PyPlot.pcolor(z::DataArray; kws...) = pcolor(pyma(z); kws...)
-PyPlot.pcolor(x,y,z::DataArray; kws...) = pcolor(x,y,pyma(z); kws...)
-pcol(z::DataArray; kws...) = pcolor(pyma(z); kws...)
-pcol(x,y,z::DataArray; kws...) = pcolor(x,y,pyma(z); kws...)
-PyPlot.plot(x::DataArray, y::DataArray; kws...) = plot(pyma(x), pyma(y); kws...)
-
-
-# Plotting using NaNs
-NaNpyma(S) = masked(S, isnan.(S))
-pcol{T}(z::Array{T,2}; kws...) = pcolor(NaNpyma(z); kws...)
-pcol{T}(x,y,z::Array{T,2}; kws...) = pcolor(x,y,NaNpyma(z); kws...)
 
 
 function ncview(fname,varname,slide)
@@ -78,6 +90,32 @@ function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l
     nothing
 end
 
+
+function plotmap(bathname = joinpath(ENV["HOME"],"projects","Julia","DIVAnd-example-data","Global","Bathymetry","gebco_30sec_4.nc"),
+                  patchcolor = [.8,.8,.8])
+
+    xl = xlim()
+    yl = ylim()
+    bx,by,b = DIVAnd.extract_bath(bathname,true,xl,yl)
+    contourf(bx,by,copy(b'), levels = [-1e5,0],colors = [patchcolor])
+end
+
+function hview(fname, varname, subindex...; orientation="horizontal", cmap="jet",
+               lonname = "lon", latname = "lat")
+    ds = Dataset(fname);
+    S = nomissing(ds[varname][subindex...],NaN);
+    lon = nomissing(Dataset(fname)[lonname][subindex[1]],NaN);
+    lat = nomissing(Dataset(fname)[latname][subindex[2]],NaN);
+    close(ds)
+
+    pcolor(lon,lat,copy(S'); cmap=cmap)
+    set_aspect_ratio()
+    colorbar(orientation=orientation)
+    plotmap()
+    xlim(extrema(lon)...)
+    ylim(extrema(lat)...)
+end
+
 """
 Fixes the aspect ratio of a plot.
 """
@@ -117,7 +155,7 @@ function plotvecstd(x,y,u,v; scale = 1, scaleu = scale,
         for i = 1:size(x,1)
             u1 = u[i,j,:]
             v1 = v[i,j,:]
-            if sum(.!isna.(u1)) >= mincount && sum(.!isna.(v1)) >= mincount
+            if sum(.!ismissing.(u1)) >= mincount && sum(.!ismissing.(v1)) >= mincount
                 plotvecstd1(x[i,j],y[i,j],u1.data,v1.data;
                             scaleu = scaleu, scalev = scalev,
                             scalestd = scalestd)
