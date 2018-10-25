@@ -96,19 +96,23 @@ function plotmap(bathname = joinpath(ENV["HOME"],"projects","Julia","DIVAnd-exam
 
     xl = xlim()
     yl = ylim()
+    # work-around
+    xl = xl[1]:0.1:xl[2]
+    yl = yl[1]:0.1:yl[2]
+
     bx,by,b = DIVAnd.extract_bath(bathname,true,xl,yl)
     contourf(bx,by,copy(b'), levels = [-1e5,0],colors = [patchcolor])
 end
 
 function hview(fname, varname, subindex...; orientation="horizontal", cmap="jet",
-               lonname = "lon", latname = "lat")
+               lonname = "lon", latname = "lat", vmin = nothing, vmax = nothing)
     ds = Dataset(fname);
     S = nomissing(ds[varname][subindex...],NaN);
     lon = nomissing(Dataset(fname)[lonname][subindex[1]],NaN);
     lat = nomissing(Dataset(fname)[latname][subindex[2]],NaN);
     close(ds)
 
-    pcolor(lon,lat,copy(S'); cmap=cmap)
+    pcolor(lon,lat,copy(S'); cmap=cmap, vmin = vmin, vmax = vmax)
     set_aspect_ratio()
     colorbar(orientation=orientation)
     plotmap()
