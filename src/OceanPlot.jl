@@ -8,11 +8,13 @@ end
 
 using PyPlot
 using PyCall
+using PyCall: PyObject, pyimport
 @static if VERSION < v"0.7"
     using MAT
 end
 using NCDatasets
 using DIVAnd
+using LinearAlgebra
 
 if VERSION < v"0.7"
 
@@ -36,6 +38,15 @@ if VERSION < v"0.7"
     NaNpyma(S) = masked(S, isnan.(S))
     pcol(z::Array{T,2}; kws...) where T = pcolor(NaNpyma(z); kws...)
     pcol(x,y,z::Array{T,2}; kws...) where T = pcolor(x,y,NaNpyma(z); kws...)
+else
+
+    function PyObject(a::Array{Union{T,Missing},N}) where {T,N}
+        numpy_ma = PyCall.pyimport("numpy")["ma"]
+        pycall(numpy_ma["array"], Any, coalesce.(a,zero(T)), mask=ismissing.(a))
+    end
+
+    PyObject(a::Adjoint) = PyObject(copy(a))
+    PyObject(a::Transpose) = PyObject(copy(a))
 end
 
 export plot_coastline, pcol, listfiles, set_aspect_ratio, patch, plotvecstd
