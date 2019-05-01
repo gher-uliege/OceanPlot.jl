@@ -51,7 +51,7 @@ end
 
 export plot_coastline, pcol, listfiles, set_aspect_ratio, patch, plotvecstd
 
-patch(x,y; kwargs...) = gca()[:add_patch](pypatch.Polygon(cat(2,x,y); kwargs...))
+patch(x,y; kwargs...) = gca().add_patch(pypatch.Polygon(cat(2,x,y); kwargs...))
 
 
 function ncview(fname,varname,slide)
@@ -86,7 +86,7 @@ function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l
         if plottype == :plot
             plot(ncst[:,1],ncst[:,2],"k-",linewidth = linewidth);
         else
-            ax[:add_patch](pypatch.Polygon(ncst,color = patchcolor, zorder = zorder))
+            ax.add_patch(pypatch.Polygon(ncst,color = patchcolor, zorder = zorder))
         end
 
     for l=1:length(index)
@@ -137,7 +137,7 @@ Fixes the aspect ratio of a plot.
 function set_aspect_ratio()
     ax = gca()
     as = cos(mean([ylim()...]) * pi/180)
-    ax[:set_aspect](1/as)
+    ax.set_aspect(1/as)
 end
 
 
