@@ -103,7 +103,7 @@ end
 
 
 function plotmap(bathname = joinpath(ENV["HOME"],"projects","Julia","DIVAnd-example-data","Global","Bathymetry","gebco_30sec_4.nc"),
-                  patchcolor = [.8,.8,.8])
+                  patchcolor = [.8,.8,.8], coastlinecolor = nothing)
 
     xl = xlim()
     yl = ylim()
@@ -112,8 +112,15 @@ function plotmap(bathname = joinpath(ENV["HOME"],"projects","Julia","DIVAnd-exam
     yl = yl[1]:0.1:yl[2]
 
     bx,by,b = DIVAnd.extract_bath(bathname,true,xl,yl)
-    contourf(bx,by,copy(b'), levels = [-1e5,0],colors = [patchcolor])
+    if patchcolor !== nothing
+        contourf(bx,by,b', levels = [-1e5,0],colors = [patchcolor])
+    end
+
+    if coastlinecolor !== nothing
+        contour(bx,by,b', levels = [-1e5,0],colors = coastlinecolor, linestyles = "-")
+    end
 end
+
 
 function hview(fname, varname, subindex...; orientation="horizontal", cmap="jet",
                lonname = "lon", latname = "lat", vmin = nothing, vmax = nothing)
