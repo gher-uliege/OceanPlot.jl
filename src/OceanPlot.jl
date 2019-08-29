@@ -1,54 +1,18 @@
 module OceanPlot
 
-if VERSION >= v"0.7"
-    using Statistics
-else
-    using DataArrays
-end
-
+using Statistics
 using PyPlot
 using PyCall
 using PyCall: PyObject, pyimport
-@static if VERSION < v"0.7"
-    using MAT
-end
+using MAT
 using NCDatasets
 using DIVAnd
 using LinearAlgebra
 
-if VERSION < v"0.7"
-
-    @pyimport numpy.ma as ma
-    @pyimport matplotlib.patches as pypatch
-
-
-    masked(S,mask) = pycall(ma.array, Any, S, mask=mask)
-
-
-    # Plotting DataArrays (masked arrays for python)
-
-    pyma(S) = masked(S.data, S.na)
-    PyPlot.pcolor(z::DataArray; kws...) = pcolor(pyma(z); kws...)
-    PyPlot.pcolor(x,y,z::DataArray; kws...) = pcolor(x,y,pyma(z); kws...)
-    pcol(z::DataArray; kws...) = pcolor(pyma(z); kws...)
-    pcol(x,y,z::DataArray; kws...) = pcolor(x,y,pyma(z); kws...)
-    PyPlot.plot(x::DataArray, y::DataArray; kws...) = plot(pyma(x), pyma(y); kws...)
-
-    # Plotting using NaNs
-    NaNpyma(S) = masked(S, isnan.(S))
-    pcol(z::Array{T,2}; kws...) where T = pcolor(NaNpyma(z); kws...)
-    pcol(x,y,z::Array{T,2}; kws...) where T = pcolor(x,y,NaNpyma(z); kws...)
-else
-
-    function PyObject(a::Array{Union{T,Missing},N}) where {T,N}
-        numpy_ma = PyCall.pyimport("numpy")["ma"]
-        pycall(numpy_ma["array"], Any, coalesce.(a,zero(T)), mask=ismissing.(a))
-    end
-
-    PyObject(a::Adjoint) = PyObject(copy(a))
-    PyObject(a::Transpose) = PyObject(copy(a))
+function PyObject(a::Array{Union{T,Missing},N}) where {T,N}
+    numpy_ma = PyCall.pyimport("numpy")["ma"]
+    pycall(numpy_ma["array"], Any, coalesce.(a,zero(T)), mask=ismissing.(a))
 end
-
 export plot_coastline, pcol, listfiles, set_aspect_ratio, patch, plotvecstd
 
 patch(x,y; kwargs...) = gca().add_patch(pypatch.Polygon(cat(2,x,y); kwargs...))
