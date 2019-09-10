@@ -9,10 +9,12 @@ using NCDatasets
 using DIVAnd
 using LinearAlgebra
 
+# allow for plotting with missing values
 function PyObject(a::Array{Union{T,Missing},N}) where {T,N}
-    numpy_ma = PyCall.pyimport("numpy")["ma"]
-    pycall(numpy_ma["array"], Any, coalesce.(a,zero(T)), mask=ismissing.(a))
+    numpy_ma = PyCall.pyimport("numpy").ma
+    pycall(numpy_ma.array, Any, coalesce.(a,zero(T)), mask=ismissing.(a))
 end
+
 export plot_coastline, pcol, listfiles, set_aspect_ratio, patch, plotvecstd
 
 patch(x,y; kwargs...) = gca().add_patch(pypatch.Polygon(cat(2,x,y); kwargs...))
