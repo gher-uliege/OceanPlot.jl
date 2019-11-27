@@ -22,11 +22,39 @@ patch(x,y; kwargs...) = gca().add_patch(pypatch.Polygon(cat(2,x,y); kwargs...))
 
 function ncview(fname,varname,slide)
     Dataset(fname) do ds
-        pcol(ds[varname][slide...]'; cmap="jet")
+        pcolormesh(ds[varname][slide...]'; cmap="jet")
+    end
+end
+
+function romsview(fname::AbstractString,varname,slide; kwargs...)
+    Dataset(fname) do ds
+        v = ds[varname]
+        lon = NCDatasets.coord(v,"longitude")[:]
+        lat = NCDatasets.coord(v,"latitude")[:]
+        v = ds[varname][slide...]
+        Δlon = lon[2,2] - lon[1,1]
+        Δlat = lat[2,2] - lat[1,1]
+
+        pcolormesh(lon .- Δlon/2,lat .- Δlat/2,v; cmap="jet", kwargs...)
+        set_aspect_ratio()
+        
+        return lon,lat,v
     end
 end
 
 
+function romsview(fnames::Vector,varname,slide; kwargs...)
+    for fname in fnames
+        lon,lat,v = romsview(fname,varname,slide; kwargs...)
+        plot([lon[1,1],lon[end,1],lon[end,end],lon[1,end],lon[1,1]],
+             [lat[1,1],lat[end,1],lat[end,end],lat[1,end],lat[1,1]],"k")
+    end
+    colorbar()
+
+    bathname = joinpath(ENV["HOME"],"projects","Julia","DIVAnd-example-data","Global","Bathymetry","gebco_30sec_1.nc")
+    @show bathname
+    plotmap(bathname)
+end
 
 """
 Plots the coastline from the file `fname`. The file `fname` is a .mat file with the variables `ncst` and `Area`.
@@ -45,7 +73,7 @@ function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l
     k = round.(Int64,c["k"])
     ncst = c["ncst"] :: Array{Float64,2}
     area = c["Area"][:,1] :: Vector{Float64}
-    index = find(area .> 0);
+    index = findall(area .> 0);
     ax = gca();
 
     cplot(ncst) =
