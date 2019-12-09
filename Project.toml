@@ -3,7 +3,6 @@ uuid = "5b812ae1-0d5a-57ac-b54f-5a05511cf0ee"
 
 [deps]
 DIVAnd = "efc8151c-67de-5a8f-9a35-d8f54746ae9d"
-DataArrays = "0fe7c1db-08c2-54a3-a222-6d1d3b7a471a"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MAT = "23992714-dd62-5051-b70f-ba57cb901cac"
 NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
