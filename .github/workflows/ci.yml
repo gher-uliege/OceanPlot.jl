@@ -35,6 +35,9 @@ jobs:
             ${{ runner.os }}-test-${{ env.cache-name }}-
             ${{ runner.os }}-test-
             ${{ runner.os }}-
+      - if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get install python3-matplotlib
       - uses: julia-actions/julia-buildpkg@latest
       - run: |
           git config --global user.name Tester
