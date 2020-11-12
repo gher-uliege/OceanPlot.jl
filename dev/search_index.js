@@ -1,0 +1,3 @@
+var documenterSearchIndex = {"docs":
+[{"location":"#OceanPlot","page":"OceanPlot","title":"OceanPlot","text":"","category":"section"},{"location":"","page":"OceanPlot","title":"OceanPlot","text":"OceanPlot Julia package repo.","category":"page"},{"location":"","page":"OceanPlot","title":"OceanPlot","text":"Modules = [OceanPlot]","category":"page"},{"location":"#OceanPlot.listfiles","page":"OceanPlot","title":"OceanPlot.listfiles","text":"List all files starting from topdir with the provided extension.\n\n\n\n\n\n","category":"function"},{"location":"#OceanPlot.set_aspect_ratio-Tuple{}","page":"OceanPlot","title":"OceanPlot.set_aspect_ratio","text":"Fixes the aspect ratio of a plot.\n\n\n\n\n\n","category":"method"}]
+}
