@@ -17,7 +17,9 @@ end
 
 export plot_coastline, pcol, listfiles, set_aspect_ratio, patch, plotvecstd
 
-patch(x,y; kwargs...) = gca().add_patch(pypatch.Polygon(cat(2,x,y); kwargs...))
+const pypatch = PyPlot.matplotlib.patches
+
+patch(x,y; kwargs...) = gca().add_patch(pypatch.Polygon(cat(x,y,dims=2); kwargs...))
 
 
 function ncview(fname,varname,slide)
@@ -137,7 +139,7 @@ Fixes the aspect ratio of a plot.
 """
 function set_aspect_ratio()
     ax = gca()
-    as = cos(mean([ylim()...]) * pi/180)
+    as = cosd(mean(ylim()))
     ax.set_aspect(1/as)
 end
 
@@ -148,15 +150,16 @@ function plotvecstd1(x,y,u1,v1; scale = 1, scaleu = scale,
     um = mean(u1)
     vm = mean(v1)
 
-    up = u1 - mean(u1)
-    vp = v1 - mean(v1)
+    up = u1 .- mean(u1)
+    vp = v1 .- mean(v1)
 
     P = Symmetric([up⋅up  up⋅vp ; 0  vp⋅vp ], :U) / (length(up)-1)
 
-    λ, U = eig(P)
-    xy = [U[i,1] * sqrt(λ[1]) * cos(θ) + U[i,2] * sqrt(λ[2]) * sin(θ) for θ = linspace(0,2π,100), i = 1:2];
+    λ, U = eigen(P)
+    xy = [U[i,1] * sqrt(λ[1]) * cos(θ) + U[i,2] * sqrt(λ[2]) * sin(θ) for θ = LinRange(0,2π,100), i = 1:2];
 
-    patch(x + scaleu*(scalestd*xy[:,1] + um),y + scalev*(scalestd*xy[:,2] + vm);
+    patch(x .+ scaleu*(scalestd*xy[:,1] .+ um),
+          y .+ scalev*(scalestd*xy[:,2] .+ vm);
           color = "lightblue", zorder = 1)
 
     quiver([x],[y],[scaleu*um],[scalev*vm]; angles = "xy", scale_units = "xy", scale = 1, zorder = 2)
@@ -172,7 +175,7 @@ function plotvecstd(x,y,u,v; scale = 1, scaleu = scale,
             u1 = u[i,j,:]
             v1 = v[i,j,:]
             if sum(.!ismissing.(u1)) >= mincount && sum(.!ismissing.(v1)) >= mincount
-                plotvecstd1(x[i,j],y[i,j],u1.data,v1.data;
+                plotvecstd1(x[i,j],y[i,j],u1,v1;
                             scaleu = scaleu, scalev = scalev,
                             scalestd = scalestd)
             end
