@@ -26,7 +26,7 @@ patch(x,y; kwargs...) = gca().add_patch(pypatch.Polygon(cat(x,y,dims=2); kwargs.
 
 function ncview(fname,varname,slide)
     Dataset(fname) do ds
-        pcolormesh(ds[varname][slide...]'; cmap="jet")
+        pcolormesh(ds[varname][slide...]')
     end
 end
 
@@ -39,7 +39,7 @@ function romsview(fname::AbstractString,varname,slide; kwargs...)
         Δlon = lon[2,2] - lon[1,1]
         Δlat = lat[2,2] - lat[1,1]
 
-        pcolormesh(lon .- Δlon/2,lat .- Δlat/2,v; cmap="jet", kwargs...)
+        pcolormesh(lon .- Δlon/2,lat .- Δlat/2,v; kwargs...)
         set_aspect_ratio()
 
         return lon,lat,v
@@ -120,7 +120,7 @@ function plotmap(bathname = joinpath(ENV["HOME"],"projects","Julia","DIVAnd-exam
 end
 
 
-function hview(fname, varname, subindex...; orientation="horizontal", cmap="jet",
+function hview(fname, varname, subindex...; orientation="horizontal", cmap=nothing,
                lonname = "lon", latname = "lat", vmin = nothing, vmax = nothing)
     ds = Dataset(fname);
     S = nomissing(ds[varname][subindex...],NaN);
@@ -215,7 +215,13 @@ end
 
 
 """
+
+Example:
+
+```julia
 varname = "temp"; cl = (6.216519f0, 16.935743f0); outname = "SST.mp4"
+OceanPlot.animation(fname,varname,cl,outname)
+```
 """
 function animation(fname,varname,cl,outname; figprefix = replace(outname,".mp4" => "-"), framerate  = 5, qtile = (0.05,0.95))
 
@@ -238,7 +244,7 @@ function animation(fname,varname,cl,outname; figprefix = replace(outname,".mp4" 
         for n = 1:size(v)[end]
             clf()
             v_slice = get(v,n)
-            pcolormesh(lon,lat,nomissing(v_slice,NaN),cmap="jet");
+            pcolormesh(lon,lat,nomissing(v_slice,NaN));
             OceanPlot.set_aspect_ratio();
             clim(cl)
             colorbar()
