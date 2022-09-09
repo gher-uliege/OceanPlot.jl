@@ -1,5 +1,6 @@
 module OceanPlot
 
+using FFMPEG
 using Statistics
 using PyPlot
 using PyCall
@@ -9,7 +10,6 @@ using NCDatasets
 using DIVAnd
 using LinearAlgebra
 using Printf
-using FFMPEG
 
 # allow for plotting with missing values
 function PyObject(a::Array{Union{T,Missing},N}) where {T,N}
