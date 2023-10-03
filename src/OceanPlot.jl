@@ -1,5 +1,6 @@
 module OceanPlot
 
+using FFMPEG
 using Statistics
 using PyPlot
 using PyCall
@@ -9,7 +10,6 @@ using NCDatasets
 using DIVAnd
 using LinearAlgebra
 using Printf
-using FFMPEG
 
 # allow for plotting with missing values
 function PyObject(a::Array{Union{T,Missing},N}) where {T,N}
@@ -19,9 +19,9 @@ end
 
 export plot_coastline, pcol, listfiles, set_aspect_ratio, patch, plotvecstd
 
-const pypatch = PyPlot.matplotlib.patches
+const mpl = PyPlot.matplotlib
 
-patch(x,y; kwargs...) = gca().add_patch(pypatch.Polygon(cat(x,y,dims=2); kwargs...))
+patch(x,y; kwargs...) = gca().add_patch(mpl.patches.Polygon(cat(x,y,dims=2); kwargs...))
 
 
 function ncview(fname,varname,slide)
@@ -84,7 +84,7 @@ function plot_coastline(fname = joinpath(ENV["HOME"],"Data","Coastline","gshhs_l
         if plottype == :plot
             plot(ncst[:,1],ncst[:,2],"k-",linewidth = linewidth);
         else
-            ax.add_patch(pypatch.Polygon(ncst,color = patchcolor, zorder = zorder))
+            ax.add_patch(mpl.patches.Polygon(ncst,color = patchcolor, zorder = zorder))
         end
 
     for l=1:length(index)
