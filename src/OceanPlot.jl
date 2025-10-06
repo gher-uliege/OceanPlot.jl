@@ -157,6 +157,7 @@ function plotvecstd1(x,y,u1,v1; scale = 1, scaleu = scale,
     P = Symmetric([up⋅up  up⋅vp ; 0  vp⋅vp ], :U) / (length(up)-1)
 
     λ, U = eigen(P)
+    println(λ)
     #λ = max.(λ,0)
     λ = clamp.(λ, 0.0, Inf)
     xy = [U[i,1] * sqrt(λ[1]) * cos(θ) + U[i,2] * sqrt(λ[2]) * sin(θ) for θ = LinRange(0,2π,100), i = 1:2];
