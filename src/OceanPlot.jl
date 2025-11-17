@@ -11,7 +11,7 @@ using LinearAlgebra
 using Printf
 
 # allow for plotting with missing values
-function PyObject(a::Array{Union{T,Missing},N}) where {T,N}
+function PyCall.PyObject(a::Array{Union{T,Missing},N}) where {T,N}
     numpy_ma = PyCall.pyimport("numpy").ma
     pycall(numpy_ma.array, Any, coalesce.(a,zero(T)), mask=ismissing.(a))
 end
