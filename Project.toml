@@ -1,5 +1,6 @@
 name = "OceanPlot"
 uuid = "5b812ae1-0d5a-57ac-b54f-5a05511cf0ee"
+version = "0.1.0"
 
 [deps]
 DIVAnd = "efc8151c-67de-5a8f-9a35-d8f54746ae9d"
