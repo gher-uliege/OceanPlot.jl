@@ -3,7 +3,8 @@ module OceanPlot
 using Statistics
 using PyPlot
 using PyCall
-using PyCall: PyObject, pyimport
+using PyCall: pyimport
+import PyCall: PyObject
 using MAT
 using NCDatasets
 using DIVAnd
